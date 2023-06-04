@@ -2,10 +2,14 @@ import tkinter as tk
 
 
 #fuction
-def enter(x):#搜尋函式
-    label.set(x)
-    author.set(x)
-    link.set(x)
+def enter():#搜尋函式
+    
+    label.set(pp)
+    author.set(pp)
+    link.set(pp)
+    t=serchentry.get()
+    print(t)
+    
 
 
 
@@ -28,7 +32,6 @@ labelframe = tk.Frame(win, width=15)        # 建立 Frame
 authorframe = tk.Frame(win, width=15)        # 建立 Frame
 linkframe = tk.Frame(win, width=15)        # 建立 Frame
 label = tk.StringVar()#存放音樂標題
-
 author = tk.StringVar()#存放作者
 
 link = tk.StringVar()#存放連結
@@ -51,7 +54,7 @@ linkscroll.config(command=linklistbox.yview)
 lbserch.pack(side="top")
 serchentry.pack(side="top")
 enterbtn.pack(side="top")
-enterbtn.config(command=enter(pp))
+enterbtn.config(command=enter)
 musiclabel.pack(anchor="w")
 labelframe.pack(anchor="w")
 labellistbox.pack(side='left', fill='x')
