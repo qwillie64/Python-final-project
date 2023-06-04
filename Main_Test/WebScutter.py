@@ -4,16 +4,13 @@ from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.chrome.options import Options
 import time
 from random import randint
-from lxml import etree
-
 
 chrome_options = Options()
 chrome_options.add_argument("--headless")
 chrome_options.add_argument("--log-level=1")
 
-
-# Search music from spotify
-def search_google(keywords: str):
+# Search music from google
+def search_google(keywords: str, random: bool = False, max: int = 3) -> dict:
     driver = webdriver.Chrome(options=chrome_options)
     driver.get("https://www.google.com.tw/")
 
@@ -77,4 +74,5 @@ def search_spotify(keywords: str, random: bool = False, max: int = 3) -> dict:
     return songs
 
 
-print(search_spotify("anime song", False, 10))
+if __name__=="__main__":
+    print(search_spotify("anime song", False, 10))
