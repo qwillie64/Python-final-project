@@ -31,7 +31,6 @@ def search_google(keywords:str) :
 def search_spotify(keywords:str) : 
     driver = webdriver.Chrome(options=chrome_options)
     driver.get(f"https://open.spotify.com/search/{keywords.replace(' ','%20')}/playlists")
-    driver.refresh()
     time.sleep(2)
     results = driver.find_elements(by=By.CLASS_NAME, value='Nqa6Cw3RkDMV8QnYreTr')
     time.sleep(2)
