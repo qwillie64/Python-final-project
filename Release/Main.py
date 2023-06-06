@@ -11,18 +11,20 @@ _font_textbox = "微軟正黑體 12"
 # search function
 def search():
     keyword = serchentry.get()
-    try :
-        results = ws.search_spotify(keywords=keyword)
-    finally :
-        print("error")
+    results = ws.search_spotify(keyword)
 
-    print(results)
-    # add_treeview()
+    add_treeview(results)
 
 
-
-def add_treeview():
-    tree.insert()
+def add_treeview(data: list):
+    i = 0
+    for d in data:
+        if len(d) < 3:
+            continue
+        tree.insert(
+            "", "end", text=str(i), values=(str(i), str(d[0]), str(d[1]), str(d[2]))
+        )
+        i += 1
 
 
 # windows form
@@ -45,19 +47,24 @@ serchentry = tk.Entry(form)  # bording
 serchentry.config(font=_font_textbox, width=55)  # size
 
 # results treeview
-tree = ttk.Treeview(form, columns="songs", show="tree headings")
+tree = ttk.Treeview(form, columns=["0", "1", "2", "3"], show="headings")
+tree.column("0", width=20, anchor="c")
+tree.column("1", anchor="c")
+tree.column("2", anchor="c")
+tree.column("3", anchor="c")
 tree.heading("0", text="Inddex")
-tree.heading("songs", text="Title")
-tree.heading("songs", text="Artist")
-tree.heading("songs", text="link")
-
+tree.heading("1", text="Title")
+tree.heading("2", text="Artist")
+tree.heading("3", text="link")
 
 # layout
 label_search.pack(side="top")
 serchentry.pack(side="top")
 button_search.pack(side="top")
 
+p_x = 0.008
+m_y = 0.4
+tree.place(relx=p_x, rely=m_y, relwidth=1 - 2 * p_x, relheight=1 - m_y - p_x)
 
-tree.place(relx=0.005, rely=0.4, relwidth=0.99, relheight=0.595)
 if __name__ == "__main__":
     form.mainloop()  # 常駐主視窗
