@@ -13,8 +13,8 @@ def search():
     keyword = serchentry.get()
     try :
         results = ws.search_spotify(keywords=keyword)
-    finally(Exception e) :
-        print(str(e))
+    finally :
+        print("error")
 
     print(results)
     # add_treeview()
