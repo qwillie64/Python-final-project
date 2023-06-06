@@ -2,8 +2,9 @@ from selenium import webdriver
 from selenium.webdriver.common.by import By
 from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.chrome.options import Options
-import time
+from time import perf_counter, sleep
 from random import randint, random
+import webbrowser
 
 chrome_options = Options()
 chrome_options.add_argument("--headless")
@@ -12,13 +13,21 @@ chrome_options.add_argument("--log-level=1")
 _max_count = 15
 _delay = [1, 2]
 _random = False
+_link = False
 _mes_func = print
+
+_waiting_time = 0
+
+
+# Open google
+def open_google(keywords: str):
+    webbrowser.open(f"https://www.google.com.tw/search?q={keywords}")
 
 
 # Search music from google
-def search_google(keywords: str) -> dict:
+def search_google(keywords: str) -> list:
     show_detail("-- Search start --")
-    show_detail("Connecting to https://www.google.com.tw/")
+    show_detail("Web connecting...")
     driver = webdriver.Chrome(options=chrome_options)
     driver.get("https://www.google.com.tw/")
 
@@ -33,13 +42,16 @@ def search_google(keywords: str) -> dict:
         print(i.text)
 
     driver.quit()
+    return results
 
 
 # Search music from spotify
 def search_spotify(keywords: str) -> list:
     show_detail("-- Search start --")
-    show_detail("Connecting to https://open.spotify.com/")
-    t_start = time.process_time
+    show_detail("Web connecting...")
+    global _waiting_time
+    _waiting_time = 0
+    t_start = perf_counter()
     t_s_p_a = 0.0
     driver = webdriver.Chrome(options=chrome_options)
     driver.get(
@@ -74,12 +86,25 @@ def search_spotify(keywords: str) -> list:
         )
         wait()
 
-        for i in range(0, len(song_name), (lambda: randint(1, 6) if _random else 1)()):
+        for i in range(
+            (lambda: randint(0, len(song_name)) if _random else 1)(),
+            len(song_name),
+            (lambda: randint(1, 6) if _random else 1)(),
+        ):
             show_detail(f"  Finding {count + 1}/{_max_count}...")
-            t_s = time.process_time()
-            links = find_from(song_name[i].text, song_artist[i].text, 1)
-            songs.append([song_name[i].text, song_artist[i].text, links[0]])
-            t_s_p_a += time.process_time() - t_s
+            t_s = perf_counter()
+            if _link:
+                links = find_from(song_name[i].text, song_artist[i].text, 1)
+                songs.append([song_name[i].text, song_artist[i].text, links[0]])
+            else:
+                songs.append(
+                    [
+                        song_name[i].text,
+                        song_artist[i].text,
+                        f"{song_name[i].text} - {song_artist[i].text}",
+                    ]
+                )
+            t_s_p_a += perf_counter() - t_s
             count += 1
             if count >= _max_count:
                 break
@@ -90,11 +115,14 @@ def search_spotify(keywords: str) -> list:
             break
 
     show_detail("-- Search finshed --")
-    t_all = time.process_time - t_start
+    t_all = perf_counter() - t_start
     show_detail(f"-- Process detail --")
-    show_detail(f"progress :{t_all} second")
-    show_detail(f"Search for all songs : {t_s_p_a} second")
-    show_detail(f"Search for one song : {t_s_p_a/len(songs)} second")
+    show_detail(f"progress : {round(t_all,5)} seconds")
+    show_detail(f"All waiting time : {round(_waiting_time,2)} seconds")
+    show_detail(f"Search for all songs : {round(t_s_p_a,2)} seconds")
+    show_detail(
+        f"Search for one song (average) : {round(t_s_p_a/float(len(songs)),2)} seconds"
+    )
     return songs
 
 
@@ -128,6 +156,7 @@ def setting(
     minDelay: int = _delay[0],
     maxDelay: int = _delay[1],
     random: bool = _random,
+    link: bool = _link,
     messageFunction=print,
 ) -> dict:
     global _max_count
@@ -136,6 +165,8 @@ def setting(
     _delay = [minDelay, maxDelay]
     global _random
     _random = random
+    global _link
+    _link = link
     global _mes_func
     _mes_func = messageFunction
 
@@ -144,6 +175,7 @@ def setting(
         "min delay": _delay[0],
         "max delay": _delay[1],
         "random": _random,
+        "link": _link,
     }
     show_detail("Setting propirty " + str(d))
     return d
@@ -151,7 +183,10 @@ def setting(
 
 # time.sleep function inside
 def wait(min: float = _delay[0], max: float = _delay[1]):
-    time.sleep(random() * (max - min) + min)
+    tick = random() * (max - min) + min
+    global _waiting_time
+    _waiting_time += tick
+    sleep(tick)
 
 
 def show_detail(detailMessage: str):
