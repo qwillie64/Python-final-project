@@ -3,27 +3,29 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.chrome.options import Options
 import time
-from random import randint
+from random import randint, randrange
 
 chrome_options = Options()
 chrome_options.add_argument("--headless")
 chrome_options.add_argument("--log-level=1")
 
-_amx_count = 50
-_delay = 3
+_max_count = 15
+_delay = [1, 2]
 _random = False
+_mes_func = print
 
 
 # Search music from google
-def search_google(keywords: str, random: bool = False, max: int = 3) -> dict:
+def search_google(keywords: str) -> dict:
     driver = webdriver.Chrome(options=chrome_options)
     driver.get("https://www.google.com.tw/")
 
     search_box = driver.find_element(By.NAME, "q")
     search_box.send_keys(keywords)
     search_box.send_keys(Keys.RETURN)
+    wait()
     results = driver.find_elements(By.CLASS_NAME, "c7r50")
-    time.sleep(randint(2, 5))
+    wait()
 
     for i in results:
         print(i.text)
@@ -32,14 +34,14 @@ def search_google(keywords: str, random: bool = False, max: int = 3) -> dict:
 
 
 # Search music from spotify
-def search_spotify(keywords: str, random: bool = False, max: int = 3) -> list:
+def search_spotify(keywords: str) -> list:
     driver = webdriver.Chrome(options=chrome_options)
     driver.get(
         f"https://open.spotify.com/search/{keywords.replace(' ','%20')}/playlists"
     )
-    time.sleep(2)
+    wait()
     results = driver.find_elements(By.CLASS_NAME, "Nqa6Cw3RkDMV8QnYreTr")
-    time.sleep(randint(1, 3))
+    wait()
 
     playlists = []
     for i in results:
@@ -49,51 +51,46 @@ def search_spotify(keywords: str, random: bool = False, max: int = 3) -> list:
     count = 0
     songs = []
     for list in playlists:
-        # print(f"url = {list}")
         driver = webdriver.Chrome(options=chrome_options)
         driver.get(list)
-        time.sleep(2)
+        wait()
         song_name = driver.find_elements(
             By.XPATH,
             "//*[@class='Type__TypeElement-sc-goli3j-0 cvuJgi t_yrXoUO3qGsJS4Y6iXX standalone-ellipsis-one-line']",
         )
-        time.sleep(2)
+        wait()
         song_artist = driver.find_elements(
             By.XPATH,
             "//*[@class='Type__TypeElement-sc-goli3j-0 fjvaLo rq2VQ5mb9SDAFWbBIUIn standalone-ellipsis-one-line']",
         )
-        time.sleep(randint(1, 3))
+        wait()
 
-        for i in range(0, len(song_name)):
-            # songs[song_name[i].text] = song_artist[i].text
+        for i in range(0, len(song_name), (lambda: randint(1, 6) if _random else 1)()):
+            print(f"Finding {count + 1}/{_max_count}...")
             links = find_from(song_name[i].text, song_artist[i].text, 1)
             songs.append([song_name[i].text, song_artist[i].text, links[0]])
-        driver.quit()
-
-        if random:
-            count += randint(1, 5)
-        else:
             count += 1
+            if count >= _max_count:
+                return songs
+        driver.quit()
+        wait()
 
-        if count >= max:
-            break
-        time.sleep(randint(1, 3))
     return songs
 
 
 # find music online link by given name and artist
-def find_from(songName: str, songArtist: str, max: int = 5) -> list:
+def find_from(songName: str, songArtist: str, max: int = 3) -> list:
     driver = webdriver.Chrome(options=chrome_options)
     driver.get("https://www.youtube.com")
-    time.sleep(2)
+    wait()
     search_box = driver.find_element(by=By.NAME, value="search_query")
     search_box.send_keys(f"{songName} - {songArtist}")
     search_box.send_keys(Keys.RETURN)
-    time.sleep(randint(2, 3))
+    wait(1.5, 2)
     results = driver.find_elements(
         By.XPATH, "//*[@class='yt-simple-endpoint style-scope ytd-video-renderer']"
     )
-    time.sleep(randint(1, 2))
+    wait(2, 3)
 
     linklists = []
     if len(results) < max:
@@ -102,15 +99,46 @@ def find_from(songName: str, songArtist: str, max: int = 5) -> list:
         linklists.append(results[i].get_attribute("href"))
 
     driver.quit()
+    print(linklists)
     return linklists
 
 
-def setting(m: int, d: int, r: bool):
-    _amx_count = m
-    _delay = d
-    _random = r
+# setting basic property for searching
+def setting(
+    total: int = _max_count,
+    minDelay: int = _delay[0],
+    maxDelay: int = _delay[1],
+    random: bool = _random,
+    messageFunction: function = print,
+) -> dict:
+    global _max_count
+    _max_count = total
+    global _delay
+    _delay = [minDelay, maxDelay]
+    global _random
+    _random = random
+    global _mes_func
+    _mes_func = messageFunction
+
+    return {
+        "total": _max_count,
+        "min delay": _delay[0],
+        "max delay": _delay[1],
+        "random": _random,
+    }
+
+
+# time.sleep function inside
+def wait(min: float = _delay[0], max: float = _delay[1]):
+    time.sleep(randrange(min, max + 1))
+
+
+def show_detail(detailMessage: str):
+    global _mes_func
+    _mes_func(detailMessage)
 
 
 if __name__ == "__main__":
-    # print(search_spotify("anime song", False, 1))
-    print(find_from("losing it", "", 3))
+    setting(5, 1, 1.5, True)
+    print(search_spotify("anime song"))
+    # print(find_from("losing it", "", 1))
