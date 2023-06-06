@@ -11,7 +11,7 @@ _font_textbox = "微軟正黑體 12"
 # search function
 def search():
     keyword = serchentry.get()
-    ws.setting(5, 0.5, 1, True)
+    ws.setting(5, 1.2, 2, True)
     results = ws.search_spotify(keyword)
 
     add_treeview(results)
