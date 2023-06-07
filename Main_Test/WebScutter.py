@@ -9,6 +9,7 @@ chrome_options = Options()
 chrome_options.add_argument("--headless")
 chrome_options.add_argument("--log-level=1")
 
+
 # Search music from google
 def search_google(keywords: str, random: bool = False, max: int = 3) -> dict:
     driver = webdriver.Chrome(options=chrome_options)
@@ -74,5 +75,34 @@ def search_spotify(keywords: str, random: bool = False, max: int = 3) -> dict:
     return songs
 
 
-if __name__=="__main__":
-    print(search_spotify("anime song", False, 10))
+def test(keywords):
+    driver = webdriver.Chrome(options=chrome_options)
+    driver.get(
+        f"https://open.spotify.com/search/{keywords.replace(' ','%20')}/playlists"
+    )
+    time.sleep(2)
+    results = driver.find_elements(By.CLASS_NAME, "Nqa6Cw3RkDMV8QnYreTr")
+    time.sleep(randint(1, 3))
+
+    playlists = []
+    for i in results:
+        playlists.append(i.get_attribute("href"))
+    driver.quit()
+
+    for list in playlists:
+        # print(f"url = {list}")
+        driver = webdriver.Chrome(options=chrome_options)
+        driver.get(list)
+        time.sleep(2)
+        song_name = driver.find_elements(
+            By.XPATH,
+            "//*[@class='iCQtmPqY0QvkumAOuCjr']",
+        )
+
+        for item in song_name:
+            print(item.text)
+
+
+if __name__ == "__main__":
+    # print(search_spotify("anime song", False, 10))
+    test("anime song")

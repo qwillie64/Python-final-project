@@ -75,36 +75,33 @@ def search_spotify(keywords: str) -> list:
         driver = webdriver.Chrome(options=chrome_options)
         driver.get(list)
         wait()
-        song_name = driver.find_elements(
-            By.XPATH,
-            "//*[@class='Type__TypeElement-sc-goli3j-0 cvuJgi t_yrXoUO3qGsJS4Y6iXX standalone-ellipsis-one-line']",
-        )
-        wait()
-        song_artist = driver.find_elements(
-            By.XPATH,
-            "//*[@class='Type__TypeElement-sc-goli3j-0 fjvaLo rq2VQ5mb9SDAFWbBIUIn standalone-ellipsis-one-line']",
-        )
+        oneSongs = driver.find_elements(By.XPATH, "//*[@class='iCQtmPqY0QvkumAOuCjr']")
         wait()
 
+        t = int(len(oneSongs) / 2)
+        show_detail(f" Found {t}")
         for i in range(
-            (lambda: randint(0, len(song_name)) if _random else 1)(),
-            len(song_name),
+            (lambda: randint(0, int(t/3)) if _random else 0)(),
+            t+1,
             (lambda: randint(1, 6) if _random else 1)(),
         ):
             show_detail(f"  Finding {count + 1}/{_max_count}...")
             t_s = perf_counter()
+            song_name = oneSongs[i].text.split('\n')[0]
+            song_artist = oneSongs[i].text.split('\n')[1]
+
             if _link:
-                links = find_from(song_name[i].text, song_artist[i].text, 1)
-                songs.append([song_name[i].text, song_artist[i].text, links[0]])
+                links = find_from(song_name, song_artist, 1)
+                songs.append([song_name, song_artist, links[0]])
             else:
                 songs.append(
                     [
-                        song_name[i].text,
-                        song_artist[i].text,
-                        f"{song_name[i].text} - {song_artist[i].text}",
+                        song_name,
+                        song_artist,
+                        f"{song_name} - {song_artist}",
                     ]
                 )
-            t_s_p_a += perf_counter() - t_s
+            t_s_p_a += (perf_counter() - t_s)
             count += 1
             if count >= _max_count:
                 break
