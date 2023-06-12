@@ -67,6 +67,7 @@ form = tk.Tk()
 form.title("Music finder")  # title
 form.geometry("800x600")  # form size
 form.resizable(False, False)  # resizable = false
+form.eval('tk::PlaceWindow . center')
 # form.iconbitmap("oshinoko.ico")  # icon
 
 # search button

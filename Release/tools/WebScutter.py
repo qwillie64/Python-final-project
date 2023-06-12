@@ -71,6 +71,9 @@ def search_spotify(keywords: str) -> list:
     count = 0
     songs = []
     for list in playlists:
+        if(len(list)<=0):
+            continue
+        
         show_detail(f" From : {list}")
         driver = webdriver.Chrome(options=chrome_options)
         driver.get(list)
